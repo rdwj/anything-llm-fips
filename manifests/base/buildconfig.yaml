@@ -1,0 +1,48 @@
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: anything-llm-fips
+  labels:
+    app: anything-llm-fips
+    app.kubernetes.io/name: anything-llm-fips
+    app.kubernetes.io/component: build
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: anything-llm-fips:latest
+  source:
+    type: Git
+    git:
+      uri: https://github.com/rdwj/anything-llm-fips.git
+      ref: fips-migration
+    contextDir: .
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: docker/Containerfile
+      from:
+        kind: DockerImage
+        name: quay.io/buildah/stable:latest
+      buildArgs:
+        - name: ARG_UID
+          value: "1000"
+        - name: ARG_GID
+          value: "1000"
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+  runPolicy: Serial
+---
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: anything-llm-fips
+  labels:
+    app: anything-llm-fips
+    app.kubernetes.io/name: anything-llm-fips
+    app.kubernetes.io/component: image
+spec:
+  lookupPolicy:
+    local: true

@@ -1,0 +1,20 @@
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: anything-llm-fips
+  labels:
+    app: anything-llm-fips
+    app.kubernetes.io/name: anything-llm-fips
+    app.kubernetes.io/component: route
+spec:
+  to:
+    kind: Service
+    name: anything-llm-fips
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None

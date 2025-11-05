@@ -1,0 +1,95 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anything-llm-fips
+  labels:
+    app: anything-llm-fips
+    app.kubernetes.io/name: anything-llm-fips
+    app.kubernetes.io/component: application
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: anything-llm-fips
+  template:
+    metadata:
+      labels:
+        app: anything-llm-fips
+    spec:
+      containers:
+        - name: anything-llm-fips
+          image: anything-llm-fips:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3001
+              protocol: TCP
+              name: http
+          env:
+            - name: NODE_ENV
+              value: "production"
+            - name: ANYTHING_LLM_RUNTIME
+              value: "docker"
+            - name: DEPLOYMENT_VERSION
+              value: "1.9.0-fips"
+            - name: NODE_OPTIONS
+              value: "--force-fips"
+            - name: OPENSSL_FIPS
+              value: "1"
+            - name: REQUIRE_FIPS
+              value: "true"
+            - name: SERVER_PORT
+              value: "3001"
+            # Add other environment variables as needed
+            # Example: LLM API keys, storage paths, etc.
+          volumeMounts:
+            - name: server-storage
+              mountPath: /app/server/storage
+            - name: collector-hotdir
+              mountPath: /app/collector/hotdir
+            - name: collector-outputs
+              mountPath: /app/collector/outputs
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "4Gi"
+              cpu: "2000m"
+          livenessProbe:
+            httpGet:
+              path: /api/ping
+              port: 3001
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api/ping
+              port: 3001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 1000
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: server-storage
+          persistentVolumeClaim:
+            claimName: anything-llm-server-storage
+        - name: collector-hotdir
+          persistentVolumeClaim:
+            claimName: anything-llm-collector-hotdir
+        - name: collector-outputs
+          persistentVolumeClaim:
+            claimName: anything-llm-collector-outputs
+      securityContext:
+        fsGroup: 1000
