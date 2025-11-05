@@ -63,6 +63,9 @@ FROM base AS frontend-build
 USER anythingllm
 WORKDIR /app
 
+# Set npm cache to writable location
+ENV npm_config_cache=/tmp/.npm
+
 COPY --chown=anythingllm:anythingllm ./frontend /app/frontend/
 WORKDIR /app/frontend
 RUN yarn install --network-timeout 100000 && yarn cache clean
@@ -81,6 +84,9 @@ WORKDIR /app
 FROM base AS backend-build
 USER anythingllm
 WORKDIR /app
+
+# Set npm cache to writable location
+ENV npm_config_cache=/tmp/.npm
 
 # Install server dependencies
 COPY --chown=anythingllm:anythingllm ./server /app/server/
