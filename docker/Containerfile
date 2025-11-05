@@ -52,9 +52,8 @@ COPY --chown=anythingllm:anythingllm ./docker/.env.example /app/server/.env
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh && \
     chmod +x /usr/local/bin/docker-healthcheck.sh
 
-# Set FIPS environment variables
-ENV OPENSSL_FIPS=1
-ENV NODE_OPTIONS="--force-fips"
+# Note: FIPS environment variables are set in production stage only
+# to avoid interfering with build processes
 
 #############################################
 # FRONTEND BUILD STAGE
