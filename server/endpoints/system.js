@@ -116,7 +116,7 @@ function systemEndpoints(app) {
 
   app.post("/request-token", async (request, response) => {
     try {
-      const bcrypt = require("bcrypt");
+      const passwordFips = require("../utils/passwordFips");
 
       if (await SystemSettings.isMultiUserMode()) {
         if (simpleSSOLoginDisabled()) {
@@ -151,7 +151,7 @@ function systemEndpoints(app) {
           return;
         }
 
-        if (!bcrypt.compareSync(String(password), existingUser.password)) {
+        if (!passwordFips.compareSync(String(password), existingUser.password)) {
           await EventLogs.logEvent(
             "failed_login_invalid_password",
             {
@@ -230,9 +230,9 @@ function systemEndpoints(app) {
       } else {
         const { password } = reqBody(request);
         if (
-          !bcrypt.compareSync(
+          !passwordFips.compareSync(
             password,
-            bcrypt.hashSync(process.env.AUTH_TOKEN, 10)
+            passwordFips.hashSync(process.env.AUTH_TOKEN, 10)
           )
         ) {
           await EventLogs.logEvent("failed_login_invalid_password", {

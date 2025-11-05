@@ -38,7 +38,7 @@ async function validatedRequest(request, response, next) {
     return;
   }
 
-  const bcrypt = require("bcrypt");
+  const passwordFips = require("../passwordFips");
   const { p } = decodeJWT(token);
 
   if (p === null || !/\w{32}:\w{32}/.test(p)) {
@@ -54,9 +54,9 @@ async function validatedRequest(request, response, next) {
   // in ln:44 will be marked invalid so they can be logged out and forced to log back in and obtain an encrypted token.
   // This kind of methodology only applies to single-user password mode.
   if (
-    !bcrypt.compareSync(
+    !passwordFips.compareSync(
       EncryptionMgr.decrypt(p),
-      bcrypt.hashSync(process.env.AUTH_TOKEN, 10)
+      passwordFips.hashSync(process.env.AUTH_TOKEN, 10)
     )
   ) {
     response.status(401).json({

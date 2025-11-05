@@ -9,7 +9,7 @@ services:
     container_name: anythingllm
     build:
       context: ../.
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ./docker/Containerfile
       args:
         ARG_UID: ${UID:-1000}
         ARG_GID: ${GID:-1000}
@@ -23,6 +23,10 @@ services:
     user: "${UID:-1000}:${GID:-1000}"
     ports:
       - "3001:3001"
+    environment:
+      - NODE_OPTIONS=--force-fips
+      - OPENSSL_FIPS=1
+      - REQUIRE_FIPS=true
     env_file:
       - .env
     networks:

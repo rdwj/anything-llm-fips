@@ -2,6 +2,24 @@ process.env.NODE_ENV === "development"
   ? require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` })
   : require("dotenv").config();
 
+// FIPS Compliance Verification
+const crypto = require("crypto");
+try {
+  const fipsMode = crypto.getFips();
+  if (fipsMode === 1) {
+    console.log("✓ FIPS mode is ENABLED");
+  } else {
+    console.warn("⚠ WARNING: FIPS mode is NOT enabled!");
+    console.warn("⚠ Set NODE_OPTIONS=--force-fips environment variable to enable FIPS mode");
+    if (process.env.REQUIRE_FIPS === "true") {
+      console.error("✗ FATAL: FIPS mode is required but not enabled. Exiting.");
+      process.exit(1);
+    }
+  }
+} catch (error) {
+  console.error("✗ Failed to check FIPS mode:", error.message);
+}
+
 require("./utils/logger")();
 const express = require("express");
 const bodyParser = require("body-parser");
