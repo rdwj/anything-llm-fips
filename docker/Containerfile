@@ -94,10 +94,21 @@ WORKDIR /app/server
 RUN yarn install --production --network-timeout 100000 && yarn cache clean && \
     npx prisma generate
 
-# Set GID 0 permissions on Prisma generated files for OpenShift arbitrary UID
+# Pre-download AI models for offline deployment
+# Copy download script to server directory so it has access to node_modules
+COPY --chown=anythingllm:anythingllm ./docker/download-models.js /app/server/
+RUN mkdir -p /app/server/storage/models && \
+    cd /app/server && \
+    STORAGE_DIR=/app/server/storage node download-models.js && \
+    rm download-models.js && \
+    echo "✓ AI models cached for offline use"
+
+# Set GID 0 permissions on Prisma generated files and models for OpenShift arbitrary UID
 USER root
 RUN chgrp -R 0 /app/server/node_modules/.prisma && \
-    chmod -R g+rwX /app/server/node_modules/.prisma
+    chmod -R g+rwX /app/server/node_modules/.prisma && \
+    chgrp -R 0 /app/server/storage/models && \
+    chmod -R g+rwX /app/server/storage/models
 USER anythingllm
 
 WORKDIR /app

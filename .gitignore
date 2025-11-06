@@ -2,6 +2,9 @@ v-env
 .env
 !.env.example
 
+# Deployment credentials - DO NOT COMMIT
+.deploy-credentials.sh
+
 node_modules
 __pycache__
 v-env
