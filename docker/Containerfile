@@ -98,6 +98,12 @@ WORKDIR /app
 # Install collector dependencies
 COPY --chown=anythingllm:anythingllm ./collector/ ./collector/
 WORKDIR /app/collector
+
+# Create and set proper permissions for Puppeteer cache
+USER root
+RUN mkdir -p /tmp/.puppeteer-cache &&     chown -R anythingllm:anythingllm /tmp/.puppeteer-cache
+USER anythingllm
+
 ENV PUPPETEER_DOWNLOAD_BASE_URL=https://storage.googleapis.com/chrome-for-testing-public
 ENV PUPPETEER_CACHE_DIR=/tmp/.puppeteer-cache
 RUN yarn install --production --network-timeout 100000 && yarn cache clean
@@ -116,7 +122,10 @@ COPY --chown=anythingllm:anythingllm --from=frontend-build /app/frontend/dist /a
 
 USER root
 RUN chown -R anythingllm:anythingllm /app/server && \
-    chown -R anythingllm:anythingllm /app/collector
+    chown -R anythingllm:anythingllm /app/collector && \
+    chgrp -R 0 /app && \
+    chmod -R g=u /app && \
+    chmod -R g+rwx /app/server /app/collector
 
 USER anythingllm
 

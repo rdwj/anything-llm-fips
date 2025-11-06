@@ -17,9 +17,11 @@ spec:
       labels:
         app: anything-llm-fips
     spec:
+      imagePullSecrets:
+        - name: wjackson-wesjackson-pull-secret
       containers:
         - name: anything-llm-fips
-          image: anything-llm-fips:latest
+          image: quay.io/wjackson/anything-llm-fips:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3001
@@ -40,6 +42,8 @@ spec:
               value: "true"
             - name: SERVER_PORT
               value: "3001"
+            - name: STORAGE_DIR
+              value: "/app/server/storage"
             # Add other environment variables as needed
             # Example: LLM API keys, storage paths, etc.
           volumeMounts:
@@ -75,7 +79,6 @@ spec:
           securityContext:
             allowPrivilegeEscalation: false
             runAsNonRoot: true
-            runAsUser: 1000
             seccompProfile:
               type: RuntimeDefault
             capabilities:
@@ -91,5 +94,3 @@ spec:
         - name: collector-outputs
           persistentVolumeClaim:
             claimName: anything-llm-collector-outputs
-      securityContext:
-        fsGroup: 1000
