@@ -1,0 +1,37 @@
+[allowlist]
+  description = "Project-specific allowlist for false positives"
+
+  # Ignore based on file paths
+  paths = [
+    # Setup documentation with example API keys
+    '''server/utils/vectorDbProviders/.*/.*_SETUP\.md$''',
+
+    # Example files
+    '''\/example.*\.pem$''',
+    '''\/examples\/''',
+
+    # Test fixtures
+    '''\/tests?\/fixtures\/''',
+    '''\/test\/.*\.key$''',
+
+    # Documentation
+    '''README\.md$''',
+    '''docs\/.*\.md$''',
+  ]
+
+  # Ignore based on line content
+  regexes = [
+    # Example API keys in documentation
+    '''sklive-123xyz''',
+
+    # Test/example passwords
+    '''password.*['"]\s*['"]\s*$''',
+    '''password.*Pass123''',
+    '''password.*example''',
+
+    # Documentation placeholders
+    '''# Your (private key|certificate) here''',
+    '''<your-.*-here>''',
+    '''REPLACE_WITH_YOUR''',
+    '''YOUR_.*_HERE''',
+  ]

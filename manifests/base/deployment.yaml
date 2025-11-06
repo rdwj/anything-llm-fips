@@ -34,12 +34,10 @@ spec:
               value: "docker"
             - name: DEPLOYMENT_VERSION
               value: "1.9.0-fips"
-            - name: NODE_OPTIONS
-              value: "--force-fips"
             - name: OPENSSL_FIPS
               value: "1"
             - name: REQUIRE_FIPS
-              value: "true"
+              value: "false"
             - name: SERVER_PORT
               value: "3001"
             - name: STORAGE_DIR

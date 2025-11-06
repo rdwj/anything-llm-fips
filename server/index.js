@@ -5,12 +5,27 @@ process.env.NODE_ENV === "development"
 // FIPS Compliance Verification
 const crypto = require("crypto");
 try {
+  // Enable FIPS mode if OPENSSL_FIPS is set
+  if (process.env.OPENSSL_FIPS === "1" && crypto.getFips() !== 1) {
+    try {
+      crypto.setFips(1);
+      console.log("✓ FIPS mode enabled programmatically");
+    } catch (fipsError) {
+      console.error("✗ Failed to enable FIPS mode:", fipsError.message);
+      if (process.env.REQUIRE_FIPS === "true") {
+        console.error("✗ FATAL: Could not enable FIPS mode. Exiting.");
+        process.exit(1);
+      }
+    }
+  }
+
+  // Verify FIPS mode status
   const fipsMode = crypto.getFips();
   if (fipsMode === 1) {
     console.log("✓ FIPS mode is ENABLED");
   } else {
     console.warn("⚠ WARNING: FIPS mode is NOT enabled!");
-    console.warn("⚠ Set NODE_OPTIONS=--force-fips environment variable to enable FIPS mode");
+    console.warn("⚠ Set OPENSSL_FIPS=1 environment variable or NODE_OPTIONS=--force-fips to enable FIPS mode");
     if (process.env.REQUIRE_FIPS === "true") {
       console.error("✗ FATAL: FIPS mode is required but not enabled. Exiting.");
       process.exit(1);
@@ -18,6 +33,9 @@ try {
   }
 } catch (error) {
   console.error("✗ Failed to check FIPS mode:", error.message);
+  if (process.env.REQUIRE_FIPS === "true") {
+    process.exit(1);
+  }
 }
 
 require("./utils/logger")();

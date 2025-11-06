@@ -91,7 +91,14 @@ ENV npm_config_cache=/tmp/.npm
 # Install server dependencies
 COPY --chown=anythingllm:anythingllm ./server /app/server/
 WORKDIR /app/server
-RUN yarn install --production --network-timeout 100000 && yarn cache clean
+RUN yarn install --production --network-timeout 100000 && yarn cache clean && \
+    npx prisma generate
+
+# Set GID 0 permissions on Prisma generated files for OpenShift arbitrary UID
+USER root
+RUN chgrp -R 0 /app/server/node_modules/.prisma && \
+    chmod -R g+rwX /app/server/node_modules/.prisma
+USER anythingllm
 
 WORKDIR /app
 
@@ -125,7 +132,7 @@ RUN chown -R anythingllm:anythingllm /app/server && \
     chown -R anythingllm:anythingllm /app/collector && \
     chgrp -R 0 /app && \
     chmod -R g=u /app && \
-    chmod -R g+rwx /app/server /app/collector
+    chmod -R g+rwX /app/server /app/collector
 
 USER anythingllm
 
@@ -134,9 +141,10 @@ ENV NODE_ENV=production
 ENV ANYTHING_LLM_RUNTIME=docker
 ENV DEPLOYMENT_VERSION=1.9.0-fips
 
-# FIPS-specific environment variables (redundant but explicit)
+# FIPS-specific environment variables
+# Note: NODE_OPTIONS="--force-fips" causes errors in OpenShift
+# FIPS is enabled via update-crypto-policies --set FIPS in the base image
 ENV OPENSSL_FIPS=1
-ENV NODE_OPTIONS="--force-fips"
 
 # Setup the healthcheck
 HEALTHCHECK --interval=1m --timeout=10s --start-period=1m \

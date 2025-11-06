@@ -1,13 +1,13 @@
 const { v4 } = require("uuid");
 const prisma = require("../utils/prisma");
-const bcrypt = require("bcrypt");
+const { hashPassword } = require("../utils/passwordFips");
 
 const RecoveryCode = {
   tablename: "recovery_codes",
   writable: [],
   create: async function (userId, code) {
     try {
-      const codeHash = await bcrypt.hash(code, 10);
+      const codeHash = await hashPassword(code);
       const recoveryCode = await prisma.recovery_codes.create({
         data: { user_id: userId, code_hash: codeHash },
       });
